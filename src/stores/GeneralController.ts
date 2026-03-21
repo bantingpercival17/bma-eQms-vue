@@ -230,25 +230,29 @@ export class GeneralController {
             throw error;
         }
     }
-    static async storeItemFiles(apiLink: string, data: FormData): Promise<Response> {
+    static async storeItemFiles(apiLink: string, data: FormData): Promise<any> {
         const token = getToken();
+
         const options: RequestInit = {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json',
-                'Content-Type': 'multipart/form-data'
             },
-            body: data, // FormData handles 'Content-Type': 'multipart/form-data' automatically
+            body: data,
         };
-        try {
-            return await fetch(baseUrl + apiLink, options);
-        } catch (error) {
-            console.error("Error in storeItem:", error);
-            throw error;
-        }
-    }
 
+        const response = await fetch(baseUrl + apiLink, options);
+
+        // ✅ Handle errors properly
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText);
+        }
+
+        // ✅ Always safe now because Laravel returns JSON
+        return await response.json();
+    }
     /**
      * Removes an item via a POST request with multipart/form-data.
      * @param apiLink The API endpoint URL.

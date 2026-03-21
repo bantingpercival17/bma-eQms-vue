@@ -93,7 +93,7 @@ export default defineComponent({
     },
     methods: {
         async uploadFiles() {
-            this.fileError = ''; // Clear previous error
+            this.clearAlert()
             this.versionFiles = [];
             if (!this.selectedFile) {
                 this.fileError = 'Please select a PDF file to upload.';
@@ -110,20 +110,18 @@ export default defineComponent({
             formData.append('description', this.description);
             formData.append('procedure', this.procedure)
             console.log(formData)
-            this.formLoader = false
-            const response = await GeneralController.storeItemFiles('procedure/store/file', formData)
-
-            if (response.ok) {
-                this.formLoader = false
-                this.alertSuccess = true
-                this.versionFiles = await this.versionList()
-                this.description = ''
-                this.fileError = ''
-            } else {
-                this.formLoader = false
-                this.alertError = true
-                this.errorMessages = response.statusText
-            }
+            await GeneralController.storeItemFiles('procedure/store/file', formData)
+                .then(async response => {
+                    this.formLoader = false
+                    this.alertSuccess = true
+                    this.versionFiles = await this.versionList()
+                    this.description = ''
+                    this.fileError = ''
+                }).catch(error => {
+                    this.formLoader = false
+                    this.alertError = true
+                    this.errorMessages = error.statusText
+                })
         },
         async versionList() {
             return await GeneralController.retrieveData('procedure/retrieve/file-list', { procedure: this.procedure }, 'versionList');
@@ -152,6 +150,11 @@ export default defineComponent({
                 this.errorMessage = error.message;
             }
         },
+        clearAlert() {
+            this.alertSuccess = false
+            this.alertError = false
+            this.fileError = ''; // Clear previous error
+        }
 
     },
     async mounted() {

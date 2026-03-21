@@ -12,10 +12,10 @@
                         <ProcedurePDFViewer :fileID="detailed?.fileID" model="ProcedureDocuments" />
                     </v-window-item>
                     <v-window-item value="two">
-                        <FormProcedure :formList="detailed.formLists" />
+                        <FormProcedure v-model:formList="detailed.formLists" :procedure="detailed?.prodId"/>
                     </v-window-item>
                     <v-window-item value="three">
-                        <UploadProcedure :procedure="detailed?.fileID" />
+                        <UploadProcedure :procedure="detailed?.prodId" />
                     </v-window-item>
                 </v-window>
             </div>

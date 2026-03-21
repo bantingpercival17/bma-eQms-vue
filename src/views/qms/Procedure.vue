@@ -70,6 +70,7 @@ export default defineComponent({
             const response = await GeneralController.retrieveData('procedure/retrieve/view', { procedure: data }, 'procedure')
             if (response) {
                 this.procedureDetails = {
+                    prodId: this.encrypt(response.id),
                     prodName: response.procedure_name,
                     prodVersion: `VERSION ${response.file.version}`,
                     formLists: response.forms,
