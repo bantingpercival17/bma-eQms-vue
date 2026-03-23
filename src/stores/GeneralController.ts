@@ -94,7 +94,7 @@ export class GeneralController {
      * @param columnName The name of the column in the response data to return.
      * @returns A Promise that resolves with the data from the specified column, or an empty array on error.
      */
-    public async retriveData<T>(apiLink: string, columnName: string): Promise<T[] | any[]> {
+    public async retrieveGETData<T>(apiLink: string, columnName: string): Promise<T[] | any[]> {
         try {
             const options: RequestInit = {
                 method: 'GET',
@@ -103,7 +103,7 @@ export class GeneralController {
             const data = await response.json();
             return data[columnName];
         } catch (error) {
-            console.error("Error in retriveData:", error);
+            console.error("Error in retrieveData:", error);
             return [];
         }
     }
@@ -165,7 +165,40 @@ export class GeneralController {
             throw err;
         }
     }
+    static async retrieveGetFile(targetApiLink: string): Promise<Blob> {
+        try {
+            const token = getToken();
+            const fetchOptions: RequestInit = {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json', // Tell the server we're sending JSON
+                },// Send the 'link' object as JSON
+            };
 
+            const response = await fetch(baseUrl + targetApiLink, fetchOptions);
+
+            // Handle HTTP errors (e.g., 404, 500, 401, 403)
+            if (!response.ok) {
+                let errorInfo = `HTTP error! Status: ${response.status}`;
+                try {
+                    const errorJson = await response.json();
+                    errorInfo += `, Details: ${JSON.stringify(errorJson)}`;
+                } catch (e) {
+                    const errorText = await response.text();
+                    errorInfo += `, Response: "${errorText.substring(0, 100)}..."`; // Truncate long responses
+                }
+                throw new Error(errorInfo);
+            }
+
+            // If the request was successful, return the response as a Blob (the PDF file)
+            return await response.blob();
+        } catch (err) {
+            console.error("API Call Error in GeneralController.retrieveGetFile:", err);
+            // Re-throw the error so the calling component can handle it
+            throw err;
+        }
+    }
     /**
      * Retrieves a file via a POST request (duplicate function name, consider renaming for clarity).
      * @param apiLink The API endpoint URL.

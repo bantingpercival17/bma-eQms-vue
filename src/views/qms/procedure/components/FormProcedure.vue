@@ -20,13 +20,14 @@
             </div>
 
             <!--  <FormModalView v-model="openModel" /> -->
-            <FormModalView v-if="formInfo" v-model="openModel" :formDetails="formInfo" />
+            <FormModalView v-if="formInfo" v-model="openModel" :formDetails="formInfo" :formData="formData1"
+                @update="updateForm" />
         </v-window-item>
         <v-window-item value="two" class="ps-5 pe-5 pt-4">
-          <v-alert v-if="errorMessages != null" type="error" colored-border elevation="2" dismissible>
-            An error occurred while saving your data. <br>
-            <small color="error">{{ errorMessages }}</small>
-        </v-alert>
+            <v-alert v-if="errorMessages != null" type="error" colored-border elevation="2" dismissible>
+                An error occurred while saving your data. <br>
+                <small color="error">{{ errorMessages }}</small>
+            </v-alert>
             <label for="ADD" class="text-subtitle-1 text-success text-h3">ADD FORMS</label>
             <template v-if="formLoader">
                 <div class="d-flex flex-column justify-center align-center pa-5">
@@ -36,20 +37,18 @@
             </template>
             <v-form v-else @submit.prevent="submitForm">
                 <v-row dense>
-                    <!-- Form Name -->
-                    <v-col cols="12">
-                        <v-text-field v-model="formData.formName" label="FORM NAME*" placeholder="Enter form name"
-                            variant="outlined" density="comfortable" color="success" required hide-details="auto"
-                            class="mb-4"></v-text-field>
-                    </v-col>
-
                     <!-- Form Code -->
                     <v-col cols="12">
                         <v-text-field v-model="formData.formCode" label="FORM CODE*" placeholder="e.g. ADM-001"
                             variant="outlined" density="comfortable" color="success" required hide-details="auto"
                             class="mb-4"></v-text-field>
                     </v-col>
-
+                    <!-- Form Name -->
+                    <v-col cols="12">
+                        <v-text-field v-model="formData.formName" label="FORM NAME*" placeholder="Enter form name"
+                            variant="outlined" density="comfortable" color="success" required hide-details="auto"
+                            class="mb-4"></v-text-field>
+                    </v-col>
                     <!-- Form Status -->
                     <v-col cols="12">
                         <v-select v-model="formData.formStatus" label="FORM STATUS*" :items="[
@@ -130,19 +129,28 @@ export default defineComponent({
             selectedFile: [],
             fileError: '',
             errors: [],
-            errorMessages:null
+            errorMessages: null,
+            formData1: []
         }
     },
     methods: {
         async viewForm(form) {
             this.openModel = true
-            const response = await GeneralController.retrieveFile({ link: form }, 'forms/retrieve-file');
+            const response = await GeneralController.retrieveGetFile('forms/view?link=' + form);
             const blob = new Blob([response], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(blob);
+            const formDetails = await GeneralController.retrieveData('forms/retrieve', { form: form }, 'form')
             this.formInfo = {
-                content: await GeneralController.retrieveData('forms/retrieve', { form: form }, 'form'),
+                content: formDetails,
                 link: url,
                 isModalLoading: false,
+            }
+            this.formData1 = {
+                formID: formDetails?.id,
+                formName: formDetails?.formName,
+                formCode: formDetails?.formCode,
+                formRetention: formDetails?.formRetention,
+                formStatus: formDetails?.formStatus,
             }
             console.log(this.formInfo)
         },
@@ -177,22 +185,35 @@ export default defineComponent({
                     formStatus: null,
                     formFile: [],
                 };
-                } catch (error) {
-                    console.log(error);
+            } catch (error) {
+                console.log(error);
+                const errorMessage = JSON.parse(error.message)
                 // ✅ safer error handling (works for Axios & others)
                 const data = error?.response?.data || null;
                 if (data) {
+
                     this.errorMessages = data.message;
                     // optional: get specific field error
                     if (data.errors?.formFile) {
                         this.fileError = data.errors.formFile[0];
                     }
                 } else {
-                    this.errorMessages = error.message;
+                    this.errorMessages = errorMessage.message;
                 }
             } finally {
                 this.formLoader = false;
             }
+        },
+        async updateForm(data) {
+            await GeneralController.storeItemFiles('forms/update', data)
+                .then(response => {
+                    console.log(response.formList)
+                    this.$emit('update:formList', response.formList);
+                    this.openModel = false
+                })
+                .catch(error => {
+                    console.log(error)
+                })
         }
     }
 });
