@@ -33,6 +33,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['vuetify'],
-    entries: ['./src/**/*.vue']
+    entries: ['./src/**/*.vue'],
+    include: ['wnumb']
   }
 });

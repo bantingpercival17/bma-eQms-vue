@@ -8,8 +8,11 @@
       </v-card-title>
       <v-tabs v-model="formModalTab" color="success" class="mb-3">
         <v-tab value="one" class="font-weight-medium">DETAILS</v-tab>
-        <v-tab value="two" class="font-weight-medium">EDIT</v-tab>
-        <v-tab value="three" class="font-weight-medium">REVISION</v-tab>
+        <template v-if="formData">
+          <v-tab value="two" class="font-weight-medium">EDIT</v-tab>
+          <v-tab value="three" class="font-weight-medium">REVISION</v-tab>
+        </template>
+
       </v-tabs>
       <v-window v-if="!formDetails.isModalLoading" v-model="formModalTab">
         <v-window-item value="one">

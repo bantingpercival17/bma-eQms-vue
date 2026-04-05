@@ -17,12 +17,14 @@ export interface User {
 
 interface AuthState {
   user: User | null;
+  token: string | null;
   returnUrl: string | null;
 }
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: JSON.parse(localStorage.getItem('user') || 'null'),
+    token: JSON.parse(localStorage.getItem('user') || 'null')?.token || null,
     returnUrl: null
   }),
   getters: {
@@ -48,6 +50,7 @@ export const useAuthStore = defineStore('auth', {
       window.location.reload();
       // Optionally, you can parse the user data and set it in the store
     },
+    
     logout() {
       this.user = null;
       localStorage.removeItem('user');

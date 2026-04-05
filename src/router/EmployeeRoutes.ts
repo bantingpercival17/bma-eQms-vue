@@ -88,6 +88,29 @@ export const adminRoute = (prop: string) => [
         'View Quality Objectives',
         () => import('@/views/quality-objectives/ViewQualityObjective.vue')
     ),
+    appendRoute(
+        prop,
+        'view-form-builders',
+        '/form-builders/',
+        'Form Builder',
+        () => import('@/views/form-builder/FormView.vue')
+    ),
+    appendRoute(
+        prop,
+        'view-form-builder',
+        '/form-builder/',
+        'Form Builder',
+        () => import('@/views/form-builder/FormBuilder.vue')
+    ),
+
+    /* WorkSpace */
+    appendRoute(
+        prop,
+        'view-workspace',
+        '/reports/workspace',
+        'My Workspace',
+        () => import('@/views/reports/workspace/Workspace.vue')
+    ),
 ];
 // Parent route
 const EmployeeRoutes = {

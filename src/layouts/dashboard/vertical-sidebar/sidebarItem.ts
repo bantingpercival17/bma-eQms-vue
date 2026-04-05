@@ -40,6 +40,11 @@ let sidebarItem: menu[] = [
   },
   { header: 'Reports' },
   {
+    title: 'Workspace',
+    icon: 'custom-upload-document', // Represents submitting documents/reports
+    to: '/reports/workspace' // Updated path for clarity
+  },
+  {
     title: 'Submission',
     icon: 'custom-upload-document', // Represents submitting documents/reports
     to: '/reports/submission' // Updated path for clarity
@@ -61,19 +66,19 @@ let sidebarItem: menu[] = [
     icon: 'custom-shield-risk', // Represents risk and mitigation
     to: '/risk/risk-management' // New path
   },
- /*  { header: 'Others' },
-  {
-    title: 'Sample Page',
-    icon: 'custom-sample', // Keep as is
-    to: '/starter'
-  }, */
+  /*  { header: 'Others' },
+   {
+     title: 'Sample Page',
+     icon: 'custom-sample', // Keep as is
+     to: '/starter'
+   }, */
 ];
 const userData = localStorage.getItem('user');
 const storedProfile = userData ? JSON.parse(userData) : null;
 const isAdmin = storedProfile.roleID
 if (isAdmin === 1) {
   sidebarItem.push(
-    { header: 'Account Management' },
+    { header: 'System Management' },
     {
       title: 'Account',
       icon: 'custom-sample',
@@ -88,6 +93,11 @@ if (isAdmin === 1) {
       title: 'Departments',
       icon: 'custom-sample',
       to: '/account1'
+    },
+    {
+      title: 'Form Builder',
+      icon: 'custom-sample',
+      to: '/form-builder/'
     }
   )
 
