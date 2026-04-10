@@ -12,4 +12,15 @@ export class FormBuilderService {
         })
         return res.json();
     }
+    buildFormList = async (): Promise<any> => {
+        const response = await api('form-builder/retrieve-build-forms')
+        return response.json();
+    }
+    storeFormResponse = async (formData: any): Promise<any> => {
+        const res = await api('form-builder/store-form-response', {
+            method: 'POST',
+            body: formData,
+        })
+        return res.json();
+    }
 }

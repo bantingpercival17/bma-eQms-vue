@@ -1,28 +1,35 @@
 <template>
     <div>
-        <label>{{ field.label }}</label>
+        <label class="mb-2 d-block">{{ field.label }}</label>
 
-        <v-checkbox v-for="opt in field.options" :key="opt" :label="opt" :value="opt" :input-value="value.includes(opt)"
-            @change="toggle(opt)" />
+        <v-checkbox v-for="opt in field.options" :key="opt" :label="opt" :value="opt" v-model="internalValue"
+            :error="error" />
+
+        <div v-if="error" class="text-error text-caption">
+            {{ errorMessages }}
+        </div>
     </div>
 </template>
 
 <script>
 export default {
     name: 'CheckboxField',
-    props: ["value", "field"],
-    methods: {
-        toggle(option) {
-            const newValue = [...this.value];
+    props: {
+        modelValue: Array,
+        field: Object,
+        error: Boolean,
+        errorMessages: String
+    },
 
-            if (newValue.includes(option)) {
-                this.$emit(
-                    "input",
-                    newValue.filter(v => v !== option)
-                );
-            } else {
-                newValue.push(option);
-                this.$emit("input", newValue);
+    emits: ['update:modelValue'],
+
+    computed: {
+        internalValue: {
+            get() {
+                return this.modelValue || [];
+            },
+            set(val) {
+                this.$emit('update:modelValue', val);
             }
         }
     }

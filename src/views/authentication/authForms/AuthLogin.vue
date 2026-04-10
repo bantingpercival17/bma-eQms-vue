@@ -15,7 +15,7 @@ export default defineComponent({
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('success')) {
       const value = urlParams.get('success');
-      
+
       const authStore = useAuthStore();
       if (value) {
         authStore.googleLogin(value).catch((error) => {

@@ -1,22 +1,22 @@
 <template>
     <div class="form-group">
         <label>{{ field.label }}</label>
-        <v-select :items="field.options" item-title="label" :label="field.label" :value="field.options.value"
-            @input="$emit('input', $event)" :rules="rules" outlined />
-    </div>
 
+        <v-select :model-value="modelValue" @update:modelValue="$emit('update:modelValue', $event)"
+            :items="field.options" :item-title="field.itemTitle || 'label'" :item-value="field.itemValue || 'value'"
+            :error="error" :error-messages="errorMessages" class="mt-2" density="comfortable" hide-details="auto"
+            variant="outlined" color="primary" />
+    </div>
 </template>
 
 <script>
 export default {
     name: 'SelectField',
-    props: ["value", "field"],
-    computed: {
-        rules() {
-            return this.field.required
-                ? [v => !!v || `${this.field.label} is required`]
-                : [];
-        }
+    props: {
+        modelValue: [String, Number, Object],
+        field: Object, // expects: { label, options: [{label, value}] }
+        error: Boolean,
+        errorMessages: String
     }
 };
 </script>
