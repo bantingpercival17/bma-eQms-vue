@@ -35,7 +35,7 @@ export default {
         TableFormList, PreviewForm, BuilderCanvas
     },
     data: () => ({
-        contentActive: "1",
+        contentActive: "2",
         service: new FormBuilderService(),
         formList: [],
         buildFormList: [],
@@ -128,39 +128,3 @@ export default {
 };
 </script>
 
-<style scoped>
-.border-right {
-    border-right: 1px solid #e0e0e0;
-}
-
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 300px;
-    text-align: center;
-}
-
-.field-item {
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    cursor: pointer;
-    border: 2px solid transparent !important;
-}
-
-.field-item:hover {
-    background-color: #fafafa;
-    border: 2px solid #bdbdbd !important;
-}
-
-.active-item {
-    border: 2px solid #1976d2 !important;
-    background-color: #e3f2fd;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-}
-
-.title-field input {
-    font-size: 1.5rem !important;
-    color: #4a4a4a !important;
-}
-</style>

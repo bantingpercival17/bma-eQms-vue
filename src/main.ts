@@ -8,7 +8,6 @@ import '@mdi/font/css/materialdesignicons.css';
 import '@/scss/style.scss';
 import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 import VueApexCharts from 'vue3-apexcharts';
-import VueTablerIcons from 'vue-tabler-icons';
 
 import SvgSprite from '@/components/shared/SvgSprite.vue';
 
@@ -32,10 +31,6 @@ import '@fontsource/public-sans/400.css';
 import '@fontsource/public-sans/500.css';
 import '@fontsource/public-sans/600.css';
 import '@fontsource/public-sans/700.css';
-import Vueform from '@vueform/vueform'
-import vueformConfig from './../vueform.config'
-import Builder from '@vueform/builder'
-import builderConfig from './../builder.config'
 import { fakeBackend } from '@/utils/helpers/fake-backend';
 const app = createApp(App);
 
@@ -49,8 +44,5 @@ app.use(createPinia());
 app.use(router);
 app.use(PerfectScrollbarPlugin);
 app.component('SvgSprite', SvgSprite);
-app.use(VueTablerIcons);
 app.use(VueApexCharts);
-app.use(Vueform, vueformConfig)
-app.use(Builder, builderConfig)
 app.use(vuetify).mount('#app');

@@ -18,6 +18,12 @@
                     <v-icon left small>{{ item.icon }}</v-icon>
                     {{ item.label }}
                 </v-btn>
+                <p class="text-caption grey--text font-weight-bold mt-4">ADVANCE</p>
+                <v-btn v-for="item in advanced" :key="item.type" block outlined color="secondary"
+                    class="mb-2 justify-start text-none" @click="addField(item)">
+                    <v-icon left small>{{ item.icon }}</v-icon>
+                    {{ item.label }}
+                </v-btn>
             </div>
         </v-col>
 
@@ -63,8 +69,9 @@
                         </p>
                     </div>
                     <template v-else>
-                        <div v-for="(field, index) in form?.form_schema" :key="field.model" class="mt-2"
-                            :class="{ 'active-item': activeIndex === index }" outlined @click="activeIndex = index">
+                        <div v-for="(field, index) in form?.form_schema" :key="field.id" class="mt-2"
+                            :class="{ 'active-item': activeIndex === index }" outlined
+                            @click="activeFieldFunction(field.id, index)">
                             <component :is="resolveComponent(field.inputType)" v-model="field.model" :field="field" />
                         </div>
                         <v-btn class="mt-4 text-end" color="primary" depressed @click="saveForm"
@@ -164,6 +171,7 @@ import CheckboxField from "../fields/CheckboxField.vue";
 import TextField from "../fields/TextField.vue";
 import FormModalView from "@/views/qms/procedure/widgets/FormModalView.vue";
 import { GeneralController } from "@/stores/GeneralController";
+import TableField from "../fields/TableField.vue";
 export default {
     name: 'BuilderCanvas',
     components: {
@@ -171,6 +179,7 @@ export default {
         SelectField,
         RadioField,
         CheckboxField,
+        TableField,
         FormModalView
     },
     props: {
@@ -202,6 +211,9 @@ export default {
                 { inputType: "radio", type: "radio", label: "Radio Group", icon: "mdi-radiobox-marked" },
                 { inputType: "select", type: "select", label: "Select Dropdown", icon: "mdi-menu-down-outline" }
             ],
+            advanced: [
+                { inputType: "table", type: 'table', label: 'Data Grid / Table', icon: 'mdi-table-edit' }
+            ],
             formInfo: {
                 isModalLoading: true,
                 content: [],
@@ -210,21 +222,21 @@ export default {
             openModel: false,
             uploadModal: false,
             file: null,
-            fileName: "",
-        }
-    },
-    computed: {
-        activeField() {
-            return this.activeIndex !== null ? this.form.form_schema[this.activeIndex] : null;
+            fileName: "", activeField: null
         }
     },
     methods: {
+        activeFieldFunction(id, index) {
+            this.activeIndex = index
+            this.activeField = this.form.form_schema.find(f => f.id === id);
+        },
         resolveComponent(type) {
             return {
                 text: "TextField",
                 select: "SelectField",
                 radio: "RadioField",
-                checkbox: "CheckboxField"
+                checkbox: "CheckboxField",
+                table: "TableField"
             }[type];
         },
         onFormChange(item) {
@@ -238,21 +250,28 @@ export default {
             const hasOptions = ["checkbox", "radio", "select"].includes(item.type);
 
             const newField = {
+                id: `field_${Date.now()}_${Math.random().toString(12).substr(2, 5)}`,
                 inputType: item.inputType,
                 type: item.type,
                 label: `${item.label} ${this.form.form_schema.length + 1}`,
                 model: `field_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
                 options: hasOptions
-                    ? [
-                        { label: "Option 1", value: "option_1" },
-                        { label: "Option 2", value: "option_2" }
-                    ]
-                    : []
+                    ? ["Option 1", "Option 2"]
+                    : null
             };
-
+            if (item.type === 'table') {
+                newField += {
+                    columns: [
+                        { label: "Purpose", type: "text", model: "purpose" },
+                        { label: "Details", type: "textarea", model: "details" },
+                        { label: "Amount", type: "number", model: "amount" }
+                    ]
+                }
+            }
             this.form.form_schema.push(newField);
-            this.activeIndex = this.form.form_schema.length + 1;
+            const index = this.form.form_schema.length - 1
             localStorage.setItem("savedForm", JSON.stringify(this.form));
+            this.activeFieldFunction(newField.id, index)
         },
         removeField(idx) {
             this.form.schema.splice(idx, 1);
@@ -327,3 +346,40 @@ export default {
     emits: ['save']
 }
 </script>
+<style scoped>
+.border-right {
+    border-right: 1px solid #e0e0e0;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    text-align: center;
+}
+
+.field-item {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    border: 2px solid transparent !important;
+}
+
+.field-item:hover {
+    background-color: #fafafa;
+    border: 2px solid #bdbdbd !important;
+}
+
+.active-item {
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #e3f2fd;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.title-field input {
+    font-size: 1.5rem !important;
+    color: #4a4a4a !important;
+}
+</style>
