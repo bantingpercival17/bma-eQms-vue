@@ -50,16 +50,20 @@ export default {
             form_code: null,
             form_name: null,
             format_code: null,
-            form_schema: []
+            form_schema: [],
+            pageProperties: []
         },
     }),
     async mounted() {
         // Example: Load existing form configuration
-        const formList = await this.service.getFormList();
-        this.formList = formList.formList;
-        this.buildFormList = formList.buildFormList;
+        this.preLoad()
     },
     methods: {
+        async preLoad() {
+            const formList = await this.service.getFormList();
+            this.formList = formList.formList;
+            this.buildFormList = formList.buildFormList;
+        },
         handleFormAction(formId, mode) {
             const form = this.buildFormList.find(f => f.id === formId);
 
@@ -70,6 +74,7 @@ export default {
             this.contentActive = mode === 'preview' ? "3" : "2";
             if (mode === 'edit') {
                 form.form_schema = JSON.parse(form.form_schema);
+                form.pageProperties =JSON.parse(form.pageProperties)
             }
             this.selectedForm = form;
             console.log(`${mode} form:`, form);
@@ -90,6 +95,7 @@ export default {
             formData.append('form', form.form_id);
             formData.append('form_code', form.form_code);
             formData.append('schema', JSON.stringify(form.form_schema));
+            formData.append('pageProperties', JSON.stringify(form.pageProperties))
             const response = await this.service.storeForm(formData);
             if (response.code === 200) {
                 localStorage.removeItem("savedForm");
@@ -101,6 +107,7 @@ export default {
                     format_code: null,
                     form_schema: []
                 }
+                this.preLoad()
             }
             alert(response.message);
             // Logic to save the form configuration, e.g., send to API
@@ -127,4 +134,3 @@ export default {
 
 };
 </script>
-

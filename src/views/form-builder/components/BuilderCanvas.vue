@@ -52,9 +52,6 @@
                         </v-btn>
                     </v-col>
                 </v-row>
-
-
-
             </v-card>
             <br>
             <v-card class="pa-1" outlined>
@@ -62,6 +59,17 @@
                     {{ form?.form_name }}
                 </v-card-title>
                 <v-card-text class="pa-1">
+                    <div class="d-flex align-center">
+                        <v-select v-model="pageProperties.pageSize" :items="['a4', 'letter', 'legal']"
+                            variant="outlined" color="primary" label="Page Size" />
+
+                        <v-select v-model="pageProperties.pageModifiers"
+                            :items="['whole', 'crosswise', 'half', 'quarter']" variant="outlined" color="primary"
+                            label="Size Modifiers" />
+
+                        <v-select v-model="pageProperties.orientation" :items="['portrait', 'landscape']"
+                            variant="outlined" color="primary" label="Orientation" />
+                    </div>
                     <div v-if="form?.form_schema?.length === 0"
                         class="empty-state d-flex flex-column align-center justify-center">
                         <v-icon size="64" color="grey lighten-2">mdi-form-select</v-icon>
@@ -97,34 +105,49 @@
                             {{ activeField.inputType.toUpperCase() }}
                         </b>
                     </v-label>
-                    <v-text-field v-model="activeField.model" label="Field Name" variant="outlined" dense
-                        class="mb-2" />
-                    <v-text-field v-model="activeField.label" label="Label Name" variant="outlined" dense
-                        class="mb-2" />
+                    <template v-if="activeField.inputType === 'table'">
+                        <div v-for="(col, i) in activeField.columns" :key="i" class="mb-3">
+                            <v-text-field v-model="activeField.columns[i].label" label="Column Name" variant="outlined"
+                                dense />
+                            <v-select v-model="activeField.columns[i].type" :items="['text', 'number', 'textarea']"
+                                variant="outlined" color="primary" label="Column Type" />
+                            <v-btn @click="activeField.columns.splice(i, 1)">
+                                <v-icon color="red">mdi-minus-circle</v-icon>
+                            </v-btn>
+                            <hr>
+                        </div>
+                        <v-btn text small color="primary" @click="addTableColumn(activeField)">
+                            + Add Column
+                        </v-btn>
+                    </template>
+                    <template v-else>
+                        <v-text-field v-model="activeField.model" label="Field Name" variant="outlined" dense
+                            class="mb-2" />
+                        <v-text-field v-model="activeField.label" label="Label Name" variant="outlined" dense
+                            class="mb-2" />
 
+                        <p class="text-caption font-weight-bold">VALIDATION</p>
+                        <v-switch v-model="activeField.required" label="Required" dense color="primary" />
 
-
-                    <p class="text-caption font-weight-bold">VALIDATION</p>
-                    <v-switch v-model="activeField.required" label="Required" dense color="primary" />
-
-                    <div v-if="hasOptions(activeField.type)">
-                        <v-divider class="my-4"></v-divider>
-                        <p class="text-caption font-weight-bold">OPTIONS</p>
-                        <div v-for="(opt, i) in activeField.options" :key="i" class="d-flex align-center mb-2">
-                            <v-text-field v-model="activeField.options[i]" dense hide-details outlined class="mr-2"
-                                placeholder="New Option" />
-                            <v-btn icon x-small @click="activeField.options.splice(i, 1)">
-                                <v-icon color="red">mdi-close</v-icon>
+                        <div v-if="hasOptions(activeField.type)">
+                            <v-divider class="my-4"></v-divider>
+                            <p class="text-caption font-weight-bold">OPTIONS</p>
+                            <div v-for="(opt, i) in activeField.options" :key="i" class="d-flex align-center mb-2">
+                                <v-text-field v-model="activeField.options[i]" dense hide-details outlined class="mr-2"
+                                    placeholder="New Option" />
+                                <v-btn icon x-small @click="activeField.options.splice(i, 1)">
+                                    <v-icon color="red">mdi-close</v-icon>
+                                </v-btn>
+                            </div>
+                            <v-btn text small color="primary" @click="addOption(activeField)">
+                                + Add Option
                             </v-btn>
                         </div>
-                        <v-btn text small color="primary" @click="addOption(activeField)">
-                            + Add Option
+                        <v-divider class="my-4"></v-divider>
+                        <v-btn class="w-100" color="red lighten-2" @click.stop="removeField(activeField.id)">
+                            REMOVE <v-icon small>mdi-delete-outline</v-icon>
                         </v-btn>
-                    </div>
-                    <v-divider class="my-4"></v-divider>
-                    <v-btn class="w-100" color="red lighten-2" @click.stop="removeField(activeField.id)">
-                        REMOVE <v-icon small>mdi-delete-outline</v-icon>
-                    </v-btn>
+                    </template>
                 </div>
 
                 <div v-else class="text-center py-10 grey--text">
@@ -195,7 +218,25 @@ export default {
             })
         }
     },
+    computed: {
+        pageProperties() {
+            let pageProperties = {
+                pageSize: 'a4',
+                orientation: 'portrait',
+                pageModifiers: 'whole'
+            }
+            if (this.form.pageProperties) {
+                pageProperties = {
+                    pageSize: this.form.pageProperties.pageSize,
+                    orientation: this.form.pageProperties.orientation,
+                    pageModifiers: this.form.pageProperties.pageModifiers,
+                }
+            }
+            return pageProperties
+        }
+    },
     data() {
+
         return {
             activeIndex: null,
             selectedForm: null,
@@ -222,7 +263,7 @@ export default {
             openModel: false,
             uploadModal: false,
             file: null,
-            fileName: "", activeField: null
+            fileName: "", activeField: null,
         }
     },
     methods: {
@@ -260,13 +301,13 @@ export default {
                     : null
             };
             if (item.type === 'table') {
-                newField += {
-                    columns: [
-                        { label: "Purpose", type: "text", model: "purpose" },
-                        { label: "Details", type: "textarea", model: "details" },
-                        { label: "Amount", type: "number", model: "amount" }
-                    ]
-                }
+                newField.model = `table_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`
+                newField.type = "table";
+                newField.columns = [
+                    { id: `col_${Math.random().toString(12).substr(2, 5)}`, label: "New Column", type: "text", model: `modelCol${Math.random().toString(12).substr(2, 5)}` },
+                    { id: `col_${Math.random().toString(12).substr(2, 5)}`, label: "New Column", type: "textarea", model: `modelCol${Math.random().toString(12).substr(2, 5)}` },
+                    { id: `col_${Math.random().toString(12).substr(2, 5)}`, label: "New Column", type: "number", model: `modelCol${Math.random().toString(12).substr(2, 5)}` }
+                ];
             }
             this.form.form_schema.push(newField);
             const index = this.form.form_schema.length - 1
@@ -284,12 +325,16 @@ export default {
         addOption(field) {
             field.options.push("");
         },
+        addTableColumn(field) {
+            const column = { id: `col_${Math.random().toString(12).substr(2, 5)}`, label: "New Column Name", type: "text", model: `modelCol${Math.random().toString(12).substr(2, 5)}` }
+            field.columns.push(column);
+        },
         getIcon(type) {
             const all = [...this.basicTypes, ...this.selectionTypes];
             return all.find(i => i.type === type)?.icon || 'mdi-help-circle';
         },
         saveForm() {
-            console.log("Saving form:", this.form);
+            this.form.pageProperties = this.pageProperties
             this.$emit('save', this.form);
         },
         async viewForm() {
@@ -312,6 +357,7 @@ export default {
         resetForm() {
             this.form.form_schema = [];
             this.activeIndex = null;
+            localStorage.removeItem("savedForm");
         },
         encrypt(data) {
             return btoa(data)

@@ -20,6 +20,7 @@
 import CheckboxField from '@/views/form-builder/fields/CheckboxField.vue';
 import RadioField from '@/views/form-builder/fields/RadioField.vue';
 import SelectField from '@/views/form-builder/fields/SelectField.vue';
+import TableField from '@/views/form-builder/fields/TableField.vue';
 import TextField from '@/views/form-builder/fields/TextField.vue';
 export default {
     name: 'PreviewForm',
@@ -27,7 +28,7 @@ export default {
         TextField,
         SelectField,
         RadioField,
-        CheckboxField
+        CheckboxField, TableField
     },
     props: {
         formSelected: {
@@ -48,14 +49,20 @@ export default {
             try {
                 return JSON.parse(this.formSelected.form_schema);
             } catch (e) {
-                console.error('Invalid schema JSON:', e);
-                return [];
+                return this.formSelected.form_schema;
+                console.log('Invalid schema JSON:', e);
             }
         },
     },
     created() {
         this.parsedSchema.forEach(field => {
-            this.formData[field.model] = ''; // ✅ important
+            console.log('Initializing field model:', field.model);
+            if (field.type === 'table') {
+                this.formData['table'] = [];
+
+            } else {
+                this.formData[field.model] = '';
+            }
         });
     },
     methods: {
@@ -65,6 +72,7 @@ export default {
                 select: SelectField,
                 radio: RadioField,
                 checkbox: CheckboxField,
+                table: TableField,
                 date: TextField // fallback for date if using same component
             }[type] || TextField;
         },

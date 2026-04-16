@@ -13,29 +13,20 @@
                     <th v-for="col in field.columns" :key="col.model">
                         {{ col.label }}
                     </th>
-                    <th width="60"></th>
                 </tr>
             </thead>
 
             <tbody>
-                <tr v-for="(row, rowIndex) in rows" :key="rowIndex">
+                <tr v-for="value in source" :key="value.id">
                     <td v-for="col in field.columns" :key="col.model">
-
-                        <!-- TEXT / NUMBER -->
-                        <v-text-field v-if="col.type === 'text' || col.type === 'number'" v-model="row[col.model]"
-                            :type="col.type" density="compact" variant="plain" placeholder="Entry..." hide-details />
-
-                        <!-- TEXTAREA -->
-                        <v-textarea v-else-if="col.type === 'textarea'" v-model="row[col.model]" density="compact"
-                            variant="plain" rows="1" auto-grow placeholder="Entry..." hide-details />
-
-                    </td>
-
-                    <!-- DELETE -->
-                    <td class="text-center">
-                        <v-btn icon size="x-small" v-if="rows.length > 1" @click="removeRow(rowIndex)">
-                            <v-icon color="red">mdi-close</v-icon>
-                        </v-btn>
+                        <v-text-field v-if="col.type === 'text'" v-model="value[col.model]" density="comfortable"
+                            hide-details="auto" variant="outlined" color="primary" width="200">
+                        </v-text-field>
+                        <v-textarea v-else-if="col.type === 'textarea'" v-model="value[col.model]" density="comfortable"
+                            hide-details="auto" variant="outlined" color="primary">
+                        </v-textarea>
+                        <v-text-field v-else-if="col.type === 'number'" v-model="value[col.model]" type="number"
+                            density="comfortable" hide-details="auto" variant="outlined" color="primary"></v-text-field>
                     </td>
                 </tr>
             </tbody>
@@ -49,45 +40,33 @@
     </div>
 </template>
 
-<script>
+<!-- <script>
 export default {
     name: "TableField",
     props: {
         field: Object,
-        modelValue: {
-            type: Array,
-            default: () => []
+    },
+    data() {
+        return {
+            source: []
         }
     },
-    emits: ["update:modelValue"],
-
-    computed: {
-        rows: {
-            get() {
-                return this.modelValue;
-            },
-            set(val) {
-                this.$emit("update:modelValue", val);
-            }
-        }
-    },
-
     mounted() {
-        // ✅ AUTO ADD FIRST ROW (IMPORTANT)
-        if (!this.rows || this.rows.length === 0) {
-            this.addRow();
-        }
+        // Initialize source with one empty row based on the columns defined in the field
+        const initialRow = {};
+        this.field.columns.forEach(col => {
+            initialRow[col.model] = '';
+        });
+        this.source.push(initialRow);
     },
-
     methods: {
         addRow() {
+            // How to add a new row to the table? We can push an empty object to the source array, and then use v-model in the table cells to bind the input values to the object properties.
             const newRow = {};
-
             this.field.columns.forEach(col => {
-                newRow[col.model] = "";
+                newRow[col.model] = '';
             });
-
-            this.rows.push(newRow);
+            this.source.push(newRow);
         },
 
         removeRow(index) {
@@ -95,8 +74,54 @@ export default {
         }
     }
 };
-</script>
+</script> -->
+<script>
+export default {
+    name: "TableField",
+    props: {
+        field: Object,
+        modelValue: [String, Number, Object] // ✅ receive data from parent
+    },
+    emits: ['update:modelValue'],
 
+    data() {
+        return {
+            source: []
+        }
+    },
+
+    mounted() {
+        const initialRow = {};
+        this.field.columns.forEach(col => {
+            initialRow[col.model] = '';
+        });
+        this.source.push(initialRow);
+    },
+
+    watch: {
+        source: {
+            deep: true,
+            handler(val) {
+                this.$emit('update:modelValue', val); // ✅ send data to parent
+            }
+        }
+    },
+
+    methods: {
+        addRow() {
+            const newRow = {};
+            this.field.columns.forEach(col => {
+                newRow[col.model] = '';
+            });
+            this.source.push(newRow);
+        },
+
+        removeRow(index) {
+            this.source.splice(index, 1);
+        }
+    }
+};
+</script>
 <style scoped>
 .border {
     border: 1px solid #e0e0e0;
