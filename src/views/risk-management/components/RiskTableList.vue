@@ -179,7 +179,7 @@ export default {
         },
         years() {
             if (this.role != 1) {
-                return ['Draft', 'Pending', 'Approved', 'Rejected'];
+                return ['All', 'Draft', 'Pending', 'Approved', 'Rejected'];
             } else {
                 const uniqueYears = [...new Set(this.data.map(i => new Date(i.date_created).getFullYear()))];
                 return uniqueYears.sort((a, b) => b - a);

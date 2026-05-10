@@ -92,7 +92,7 @@ import { GeneralController } from '@/stores/GeneralController';
 import RiskTableList from './components/RiskTableList.vue';
 import RiskReportModal from './components/RiskReportModal.vue';
 import RiskAssessmentValidation from './components/RiskAssessmentValidation.vue';
-
+import { RiskAssessmentsService } from '@/services/riskAssessmentService';
 export default defineComponent({
     name: 'VersionControl',
     data() {
@@ -120,8 +120,8 @@ export default defineComponent({
             riskAssessmentValidation: {
                 modalShow: false,
                 content: null
-            }
-
+            },
+            riskAssessmentService: new RiskAssessmentsService()
         }
     },
     components: {
@@ -147,6 +147,7 @@ export default defineComponent({
     },
     async mounted() {
         this.loadData()
+        this.retrieveDataList()
     },
     methods: {
         async loadData() {
@@ -163,8 +164,6 @@ export default defineComponent({
                 this.riskAssessmentsList = response
                 this.contentLoading = false
             }
-            this.ownerRiskAssessments = await this.retrieveData(2)
-            this.submissionRiskAssessments = await this.retrieveData(5)
             this.dataBankRiskAssessments = await this.retrieveData(1)
         },
         async retrieveData(role) {
@@ -181,6 +180,28 @@ export default defineComponent({
                 const response = await GeneralController.retrieveData(roleLink.link, { search: null }, roleLink.dataKey)
                 if (response) {
                     this.contentLoading = false
+                    return response
+
+                }
+            } catch (error) {
+                this.alertMessage = {
+                    show: true,
+                    status: 'error',
+                    text: `An error occurred while  retrieve data for ${roleLink.name}.` + error
+                }
+            } finally {
+                this.contentLoading = false;
+            }
+        },
+        async retrieveDataList() {
+            this.contentLoading = false
+
+            try {
+                const response = await this.riskAssessmentService.retrieveDataList()
+                if (response) {
+                    this.contentLoading = false
+                    this.ownerRiskAssessments = response['ownerList']
+                    this.submissionRiskAssessments = response['submittedList']
                     return response
 
                 }
