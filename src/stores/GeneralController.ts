@@ -85,7 +85,10 @@ export class GeneralController {
             return data[columnName];
         } catch (error) {
             console.error("Error in retrieveData:", error);
-            return [];
+            return {
+                status: 500,
+                message: error.message || 'Internal Server Error',
+            };
         }
     }
     /**

@@ -25,7 +25,7 @@
                 <template v-else>
                     <v-window v-model="tab">
                         <v-tabs v-model="tab" color="success" class="px-6">
-                            <v-tab value="one" class="font-weight-medium">MY RISKS</v-tab>
+                            <v-tab value="one" class="font-weight-medium">My Quality Objective</v-tab>
                             <v-tab v-if="userRole != 6" value="two" class="font-weight-medium">SUBMISSIONS</v-tab>
                             <v-tab v-if="userRole != 5" value="three" class="font-weight-medium">DATA BANK</v-tab>
                         </v-tabs>
@@ -103,7 +103,8 @@ import QualityObjectiveList from './components/QualityObjectiveList.vue';
 import AlertMessage from '../components/AlertMessage.vue';
 import ConfirmationDialog from '../components/ConfirmationDialog.vue';
 import QualityObjectiveModal from './components/QualityObjectiveModal.vue';
-
+import { useAuthStore } from '@/stores/auth';
+import { QualityObjectiveService } from '@/services/qualityObjectiveService';
 export default {
     name: 'QualityObjective',
     data() {
@@ -143,7 +144,9 @@ export default {
                 link: null,
                 data: null,
                 isModalLoading: true
-            }
+            },
+            authStore: new useAuthStore(),
+            qualityObjectiveService: new QualityObjectiveService()
         }
 
     },
@@ -187,42 +190,30 @@ export default {
         },
     },
     async mounted() {
-        console.log(this.userRole)
         this.titleOption = await GeneralController.retrieveData('amendment/categories', { search: 'Procedure' }, 'data');
-        if (this.userRole == 2) {
-            this.qualityObjectiveList = await this.retrieveData(2)
-        } else if (this.userRole == 5) {
-            this.qualityObjectiveList = await this.retrieveData(2)
-            this.submissionObjectiveList = await this.retrieveData(5)
-        } else {
-            this.dataBankObjectiveList = await this.retrieveData(1)
-            this.qualityObjectiveList = await this.retrieveData(2)
-            this.submissionObjectiveList = await this.retrieveData(5)
-        }
-
+        await this.retrieveData()
     },
     methods: {
         async retrieveData() {
-            this.qualityObjectiveList = await GeneralController.retrieveData('quality-objective/retrieve-list', { search: null }, 'qualityObjectiveList');
-            this.contentLoading = false
-        },
-        async retrieveData(role) {
             // Get the appropriate API link based on user role
-            const roleLink = this.apiLink.find(ap => ap.role === role);
-            this.contentLoading = false
+            this.contentLoading = true
             try {
-                const response = await GeneralController.retrieveData(roleLink.link, { search: null }, roleLink.dataKey)
+                const formData = new FormData();
+                formData.append('search', null);
+                const response = await this.qualityObjectiveService.retrieveData('quality-objective/retrieve-data-list', formData)
                 if (response) {
-                    this.contentLoading = false
-                    return response
+                    this.dataBankObjectiveList = response['approvedList']
+                    this.qualityObjectiveList = response['ownerList']
+                    this.submissionObjectiveList = response['submittedList']
 
                 }
             } catch (error) {
                 this.alertMessage = {
                     show: true,
                     status: 'error',
-                    text: `An error occurred while  retrieve data for ${roleLink.name}.` + error
+                    text: `An error occurred while  retrieve data.` + error
                 }
+                // this.authStore.logout()
             } finally {
                 this.contentLoading = false;
             }

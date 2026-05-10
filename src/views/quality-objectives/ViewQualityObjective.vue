@@ -62,6 +62,7 @@ import AddObjectiveForm from './components/AddObjectiveForm.vue';
 import ConfirmationDialog from '../components/ConfirmationDialog.vue';
 import AlertMessage from '../components/AlertMessage.vue';
 import QualityObjectiveModal from './components/QualityObjectiveModal.vue';
+import { QualityObjectiveService } from '@/services/qualityObjectiveService';
 export default {
     name: 'ViewQualityObjective',
     data() {
@@ -89,7 +90,8 @@ export default {
                 link: null,
                 data: null,
                 isModalLoading: false
-            }
+            },
+            qualityObjectiveService: new QualityObjectiveService()
         }
     },
     components: {
@@ -100,9 +102,23 @@ export default {
     },
     methods: {
         async retrieveData() {
-            this.objective = await GeneralController.retrieveData('quality-objective/view-objective', { data: this.$route.params.objective }, 'qualityObjective');
-            if (this.objective) {
-                this.pageLoader = false
+            try {
+                const formData = new FormData()
+                formData.append('data', this.$route.params.objective)
+                const response = await this.qualityObjectiveService.viewQualityObjective(formData)
+                if (response) {
+                    this.objective = response['qualityObjective']
+
+                }
+            } catch (error) {
+                this.alertMessage = {
+                    show: true,
+                    status: 'error',
+                    text: `An error occurred while  retrieve data.` + error
+                }
+                // this.authStore.logout()
+            } finally {
+                this.pageLoader = false;
             }
         },
         addObjective() {
